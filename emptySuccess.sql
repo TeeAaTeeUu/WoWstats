@@ -1,0 +1,1 @@
+TRUNCATE auctions_success;

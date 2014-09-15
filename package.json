@@ -1,0 +1,12 @@
+{
+	"name": "wowStats",
+	"version": "0.0.1",
+	"private": true,
+	"dependencies": {
+		"cron": "1.0.4",
+		"request": "2.42.0",
+		"join": "3.0.0",
+		"lodash": "2.4.1",
+		"pg": "3.4.2"
+	}
+}
