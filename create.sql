@@ -5,8 +5,7 @@
 --drop table auctions_success;
 
 create table if not exists auctions_new(
-   id serial PRIMARY KEY,
-   auc int8 UNIQUE,
+   auc int8 PRIMARY KEY,
    item int,
    owner varchar(20),
    realm varchar(20),
@@ -19,8 +18,7 @@ create table if not exists auctions_new(
 );
 
 create table if not exists auctions_old(
-   id serial PRIMARY KEY,
-   auc int8 UNIQUE,
+   auc int8 PRIMARY KEY,
    item int,
    owner varchar(20),
    realm varchar(20),
@@ -33,8 +31,21 @@ create table if not exists auctions_old(
 );
 
 create table if not exists auctions_success(
-   id serial PRIMARY KEY,
    auc int8 UNIQUE,
+   item int,
+   owner varchar(20),
+   realm varchar(20),
+   bid int8,
+   buyout int8,
+   quantity int,
+   timeleft varchar(9),
+   rand int,
+   seed int8,
+   PRIMARY KEY (item, auc)
+);
+
+create table if not exists auctions_success_temp(
+   auc int8 PRIMARY KEY,
    item int,
    owner varchar(20),
    realm varchar(20),
@@ -51,7 +62,18 @@ create table if not exists auctions_short(
    auc int8
 );
 
-CREATE VIEW auctions_short_count AS
+CREATE OR REPLACE VIEW auctions_short_count AS
 SELECT auc, COUNT(auctions_short.auc) AS times
 FROM  auctions_short
 GROUP BY auc;
+
+CREATE OR REPLACE VIEW auctions_top AS
+SELECT item, AVG(auctions_success.buyout / auctions_success.quantity) / 10000 AS mean,
+STDDEV_POP(auctions_success.buyout / auctions_success.quantity) / 10000 AS stddev,
+(STDDEV_POP(auctions_success.buyout / auctions_success.quantity) - (0.05 * AVG(auctions_success.buyout / auctions_success.quantity))) / 10000 AS stddev_cut,
+(STDDEV_POP(auctions_success.buyout / auctions_success.quantity) - (0.05 * AVG(auctions_success.buyout / auctions_success.quantity))) * SUM(auctions_success.quantity) / 10000 AS stddev_cut_profit,
+SUM(auctions_success.quantity) AS amount
+FROM  auctions_success
+GROUP BY item
+HAVING COUNT(*) > 1
+ORDER BY stddev_cut_profit DESC;
